@@ -140,5 +140,19 @@ exports.handlebars = {
     test.ok(/WOOT/.test(actual), 'should use the provided handlebarsPath');
 
     test.done();
+  },
+  no_concatenate: function(test){
+    'use strict';
+    test.expect(2);
+
+    var actual = grunt.file.read('tmp/dest/text.js');
+    var expected = grunt.file.read('test/expected/text.js');
+    test.equal(actual, expected, 'should write individual files if concatenation is disabled');
+
+    actual = grunt.file.read('tmp/dest/simple.js');
+    expected = grunt.file.read('test/expected/simple.js');
+    test.equal(actual, expected, 'should write individual files if concatenation is disabled');
+
+    test.done();
   }
 };

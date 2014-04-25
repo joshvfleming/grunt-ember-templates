@@ -38,11 +38,24 @@ module.exports = function(grunt) {
   'use strict';
 
   var compiler = require('ember-template-compiler');
+  var path = require('path');
+
+  var writeFile = function(contents, dest, options) {
+    if (options.amd) {
+      contents = contents.concat('});');
+    }
+
+    if (contents.length > 0) {
+      grunt.file.write(dest, contents.join('\n\n'));
+      grunt.log.writeln('File "' + dest + '" created.');
+    }
+  };
 
   var emberTemplatesTask = function() {
     var options = this.options({
       templateFileExtensions: /\.(hbs|hjs|handlebars)/,
       amd: false,
+      concatenate: true,
       precompile: true,
       templateName: function(name) { return name; },
       templateNameFromFile: function(file) {
@@ -112,7 +125,10 @@ module.exports = function(grunt) {
             contents = 'Ember.Handlebars.compile(' + JSON.stringify(grunt.file.read(file)) + ')';
           }
 
-          processedTemplates.push(options.templateRegistration(name, contents));
+          processedTemplates.push({
+            name: name,
+            contents: options.templateRegistration(name, contents)
+          });
 
         } catch(e) {
           grunt.log.error(e);
@@ -120,17 +136,18 @@ module.exports = function(grunt) {
         }
       });
 
-      output = output.concat(processedTemplates);
+      if (options.concatenate) {
+        output = output.concat(processedTemplates.map(function(t) {
+          return t.contents;
+        }));
 
-      if (options.amd) {
-        output = output.concat('});');
+        writeFile(output, f.dest, options);
+
+      } else {
+        processedTemplates.forEach(function(t) {
+          writeFile([ t.contents ], path.join(f.dest, path.basename(t.name) + '.js'), options);
+        });
       }
-
-      if (output.length > 0) {
-        grunt.file.write(f.dest, output.join('\n\n'));
-        grunt.log.writeln('File "' + f.dest + '" created.');
-      }
-
     });
   };
 

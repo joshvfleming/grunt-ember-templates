@@ -167,6 +167,14 @@ module.exports = function(grunt) {
         files: {
           'tmp/custom_handlebars_path.js': ['test/fixtures/text.hbs']
         }
+      },
+      noConcatenate: {
+        options: {
+          concatenate: false,
+        },
+        files: {
+          'tmp/dest': ['test/fixtures/text.hbs',
+                       'test/fixtures/simple.hbs']}
       }
     },
 
